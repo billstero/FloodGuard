@@ -205,9 +205,4 @@ app.post('/api/predict/run', async (req, res) => {
   }
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`=============================================`);
-  console.log(`🚀 HYBRID SERVER (OW + BMKG PROVINSI) READY!`);
-  console.log(`   Scanning all Jakarta regions automatically...`);
-  console.log(`=============================================`);
-});
+module.exports = app;
