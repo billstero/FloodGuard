@@ -1,4 +1,4 @@
-const BASE = 'https://vercel.com/nabilmghifari26-8173s-projects/fgwebsite/G7uwynVRHixpGJ4qKFDuDM9Dco8G/api'; // <--- GANTI INI DENGAN LINK VERCEL BACKEND KAMU
+const BASE = 'https://flood-guard-three.vercel.app/api'; // <--- GANTI INI DENGAN LINK VERCEL BACKEND KAMU
 
 // ============================================================================
 
