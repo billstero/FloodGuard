@@ -1,0 +1,184 @@
+/* === 1. IMPORT FONTS === */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap');
+
+:root {
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+
+  /* === COLOR PALETTE === */
+  --accent-gradient: linear-gradient(135deg, #D60270 0%, #9B4F96 50%, #0038A8 100%);
+  
+  --color-safe: #34c759;
+  --color-warn: #ffcc00;
+  --color-danger: #ff3b30;
+
+  /* === LIGHT MODE === */
+  --bg-gradient: linear-gradient(-45deg, #f2f4f7, #e0e7ff, #f3e8ff, #fce7f3);
+  --text-main: #1d1d1f;
+  --text-muted: #86868b;
+  
+  --glass-bg: rgba(255, 255, 255, 0.85); /* Lebih solid agar konten jelas */
+  --glass-border: rgba(255, 255, 255, 1);
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --glass-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
+  
+  --input-bg: #f0f2f5;
+  --input-hover: #e4e6eb;
+  --border-radius-card: 24px;
+}
+
+[data-theme="dark"] {
+  /* === DARK MODE === */
+  --bg-gradient: linear-gradient(-45deg, #0b0e14, #111827, #1e1b2e, #0f172a);
+  
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+
+  --glass-bg: #151a23; 
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --glass-shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.6);
+  
+  --input-bg: #0b0e14;
+  --input-hover: #161b22;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-gradient);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 30px 20px;
+  transition: color 0.3s ease;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+h1, h2, h3, .card-title, .status-text { font-family: var(--font-heading); }
+
+/* === LAYOUT === */
+.app-root { max-width: 1350px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 24px; }
+
+header.container { 
+  display: flex; justify-content: space-between; align-items: center; 
+  padding: 10px 0;
+  animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === BRANDING & BUTTONS === */
+.brand-logo { font-size: 2rem; font-weight: 800; letter-spacing: -1px; margin: 0; display: flex; align-items: center; }
+.brand-text-guard { background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-left: 2px; }
+
+.header-actions { display: flex; gap: 12px; }
+.btn-primary {
+  background: var(--accent-gradient); border: none; color: white; padding: 10px 24px; border-radius: 50px;
+  font-weight: 600; font-size: 0.85rem; font-family: var(--font-heading); cursor: pointer; 
+  transition: all 0.3s; box-shadow: 0 4px 15px rgba(214, 2, 112, 0.3); display: flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(214, 2, 112, 0.5); }
+.btn-secondary {
+  background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main);
+  padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 0.85rem; font-family: var(--font-heading);
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-secondary:hover { background: var(--input-bg); transform: translateY(-2px); }
+
+/* === GRID === */
+.top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.main-grid { display: grid; grid-template-columns: 1fr 2.5fr; gap: 24px; align-items: stretch; }
+
+/* === CARD === */
+.card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-card);
+  box-shadow: var(--glass-shadow);
+  padding: 24px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  transition: transform 0.3s, box-shadow 0.3s;
+  animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.card:hover { transform: translateY(-5px); box-shadow: var(--glass-shadow-hover); }
+.card.map-card { padding: 0 !important; overflow: hidden; min-height: 550px; }
+.card.map-card:hover { transform: none; } /* Map tidak usah gerak */
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.card-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; color: var(--text-muted); }
+
+/* === MAP & SENSOR === */
+.map-wrapper { width: 100%; height: 100%; }
+.leaflet-container { width: 100% !important; height: 100% !important; background: #0b0e14 !important; }
+
+.sensor-list { display: flex; flex-direction: column; gap: 12px; }
+.sensor-item {
+  display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--input-bg);
+  border-radius: 16px; border: 1px solid transparent; transition: all 0.2s;
+}
+.sensor-item:hover { background: var(--input-hover); transform: translateX(5px); border-color: var(--glass-border); }
+.sensor-icon { font-size: 1.5rem; width: 40px; text-align: center; }
+.sensor-value { font-size: 1.25rem; font-weight: 700; color: var(--text-main); }
+.sensor-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+.location-select {
+  width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid transparent;
+  background: var(--input-bg); color: var(--text-main); font-weight: 600; outline: none; cursor: pointer;
+  appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 15px center; background-size: 16px; transition: all 0.3s;
+}
+.location-select:hover { background: var(--input-hover); }
+.location-select option { background: #0b0e14; color: white; }
+
+/* === STATUS & CHART === */
+.status-big { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.chart-container { width: 100%; height: 320px; position: relative; }
+
+/* === FIXED PROGRESS BARS (MASALAH UTAMA SELESAI DISINI) === */
+.progress-track {
+    height: 12px; /* Lebih tebal sedikit */
+    background: var(--input-bg); /* Warna track redup */
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 8px;
+    /* Tambahkan shadow dalam agar terlihat cekung */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 20px;
+    /* Ganti animation dengan transition standar yang solid */
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tambahkan efek kilau (shimmer) manual tanpa merusak width */
+.progress-fill::after {
+    content: ''; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0) 0, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    animation: shimmer 2s infinite linear; transform: translateX(-100%);
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+.text-safe { color: var(--color-safe); }
+.text-warn { color: var(--color-warn); }
+.text-danger { color: var(--color-danger); }
+
+/* Responsive */
+@media (max-width: 968px) {
+  .main-grid, .top-grid { grid-template-columns: 1fr; }
+  .card.map-card { min-height: 400px; }
+}
