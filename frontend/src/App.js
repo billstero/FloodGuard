@@ -36,23 +36,57 @@ function App() {
   async function loadWeatherData(lat, lon, customName = null) {
     try {
       if (!isSimulating) setWeather(prev => ({ ...prev, location: 'Mengambil Data...' }));
+      
       const w = await fetchOpenWeather(lat, lon);
+      
       if (w && w.data) {
-        let current = w.data.current; let hourlyData = w.data.hourly || [];
-        let realRain = current.rain || 0; let realPop = (hourlyData.length > 0) ? hourlyData[0].rain_prob : 0;
-        let realTemp = current.temp; let realHum = current.humidity;
+        let current = w.data.current; 
+        let hourlyData = w.data.hourly || [];
+        
+        // === FIX SINKRONISASI GRAFIK & KARTU ===
+        // Kita ambil data probabilitas dari jam pertama (hourly[0]) 
+        // agar angka di Kartu SAMA PERSIS dengan titik pertama di Grafik.
+        
+        let firstHourPop = 0;
+        if (hourlyData.length > 0) {
+            // Cek properti 'pop' (standar API) atau 'rain_prob' (backend custom)
+            let rawPop = hourlyData[0].pop !== undefined ? hourlyData[0].pop : hourlyData[0].rain_prob;
+            
+            // OpenWeather kirim 0.0 s/d 1.0, kita ubah ke persen (0-100)
+            // Kalau data backend sudah 0-100, biarkan saja.
+            firstHourPop = (rawPop <= 1) ? rawPop * 100 : rawPop;
+        }
+        
+        let realPop = Math.round(firstHourPop);
+        // =======================================
+
+        let realRain = current.rain || 0; 
+        let realTemp = current.temp; 
+        let realHum = current.humidity;
+
         if (isSimulating) {
             realRain = 45.5; realPop = 98; realTemp = 24.0; realHum = 92;
             hourlyData = hourlyData.map(h => ({ ...h, rain_prob: 90 + (Math.random() * 10), rain: { '1h': 20 + Math.random() * 10 } }));
         }
-        setWeather({ temp: realTemp, humidity: realHum, wind: current.wind_speed, rain: realRain, pop: realPop, location: customName || w.data.location });
-        setHourly(hourlyData); setActiveCoords([lat, lon]); 
+
+        setWeather({ 
+            temp: realTemp, 
+            humidity: realHum, 
+            wind: current.wind_speed, 
+            rain: realRain, 
+            pop: realPop, // <-- Nilai ini sekarang sinkron dengan grafik
+            location: customName || w.data.location 
+        });
+
+        setHourly(hourlyData); 
+        setActiveCoords([lat, lon]); 
         setRisk(calculateDynamicRisk(realRain, realHum, isSimulating));
       }
     } catch (e) { console.error(e); }
   }
 
   const handleLocationSelect = (lat, lon, name) => loadWeatherData(lat, lon, name);
+  
   useEffect(() => {
     if (activeCoords) loadWeatherData(activeCoords[0], activeCoords[1], weather.location);
     else loadWeatherData(-6.1767, 106.8263, "Jakarta Pusat");
