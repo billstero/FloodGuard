@@ -25,47 +25,33 @@ ChartJS.register(
 
 export const WeatherTrendChart = ({ theme, hourlyData }) => {
   const isDark = theme === 'dark';
-
-  // === WARNA KONSISTEN (NEON) ===
   const colors = {
-    rain: isDark ? '#00f3ff' : '#00a8cc',      // Cyan Neon (Dark) vs Cyan Deep (Light)
-    humidity: isDark ? '#bc13fe' : '#9d00d6',  // Purple Neon
+    rain: isDark ? '#00f3ff' : '#00a8cc',
+    humidity: isDark ? '#bc13fe' : '#9d00d6', 
     text: isDark ? '#ffffff' : '#1e293b',
     grid: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
     tooltipBg: isDark ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.9)',
     tooltipText: isDark ? '#ffffff' : '#000000'
   };
 
-  // === DATA PROCESSING (24 JAM FULL) ===
-  // OpenWeatherMap Forecast biasanya per 3 jam.
-  // Untuk 24 jam kedepan, kita butuh sekitar 8 sampai 9 titik data.
   const DATA_LIMIT = 9; 
 
   const labels = hourlyData
     ? hourlyData.slice(0, DATA_LIMIT).map(h => {
         const date = new Date(h.dt * 1000);
-        // Format 24 Jam (Contoh: 13:00, 23:00, 00:00)
         return date.toLocaleTimeString('id-ID', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false 
-        }).replace('.', ':'); // Ganti titik jadi titik dua
+        }).replace('.', ':');
       })
     : [];
 
-  // PENTING: Jika backend kamu kirim "rain_prob" pakai itu, 
-  // Jika tidak, kita hitung manual dari data "rain" (mm) untuk visualisasi
   const rainProbData = hourlyData
     ? hourlyData.slice(0, DATA_LIMIT).map(h => {
-        // Cek apakah ada properti pop (Probability of Precipitation) dari OpenWeather
-        // Nilai pop biasanya 0 s/d 1. Kita kali 100 biar jadi Persen.
         if (h.pop !== undefined) return h.pop * 100;
-        
-        // Fallback: Jika backend custom kamu kirim rain_prob
         if (h.rain_prob !== undefined) return h.rain_prob;
 
-        // Fallback Terakhir: Jika cuma ada curah hujan (mm), kita kira-kira saja buat grafik
-        // (Hanya visualisasi, bukan akurat)
         const rainMm = (h.rain && h.rain['1h']) ? h.rain['1h'] : 0;
         return rainMm > 0 ? Math.min(rainMm * 10, 100) : 0; 
       })
@@ -75,7 +61,6 @@ export const WeatherTrendChart = ({ theme, hourlyData }) => {
     ? hourlyData.slice(0, DATA_LIMIT).map(h => h.humidity ?? 0)
     : [];
 
-  // === CHART CONFIG ===
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -117,7 +102,7 @@ export const WeatherTrendChart = ({ theme, hourlyData }) => {
       },
       y: {
         min: 0,
-        max: 100, // Persentase selalu 0-100
+        max: 100, 
         ticks: {
           stepSize: 25,
           color: colors.text,
@@ -132,7 +117,6 @@ export const WeatherTrendChart = ({ theme, hourlyData }) => {
     }
   };
 
-  // === DATASET SETUP ===
   const data = {
     labels,
     datasets: [
@@ -147,7 +131,7 @@ export const WeatherTrendChart = ({ theme, hourlyData }) => {
           gradient.addColorStop(1, isDark ? 'rgba(0, 243, 255, 0)' : 'rgba(0, 168, 204, 0)');
           return gradient;
         },
-        tension: 0.4, // Garis melengkung halus
+        tension: 0.4, 
         fill: true,
         borderWidth: 3,
         pointBackgroundColor: colors.rain,
@@ -159,10 +143,10 @@ export const WeatherTrendChart = ({ theme, hourlyData }) => {
         label: 'Kelembaban',
         data: humidityData,
         borderColor: colors.humidity,
-        borderDash: [5, 5], // Garis putus-putus
+        borderDash: [5, 5], 
         tension: 0.4,
         borderWidth: 2,
-        pointRadius: 0, // Titik disembunyikan biar tidak semrawut
+        pointRadius: 0, 
         pointHoverRadius: 4
       }
     ]

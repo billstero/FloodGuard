@@ -7,7 +7,7 @@ from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
-# --- SETUP PATH ---
+#SETUP PATH
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SAVED_MODEL_DIR = os.path.join(BASE_DIR, 'saved_model')
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -18,8 +18,7 @@ if not os.path.exists(DATA_DIR): os.makedirs(DATA_DIR)
 
 print(f"📂 Working Directory: {BASE_DIR}")
 
-# --- 1. GENERATE DATA DUMMY (2020 - 2025) ---
-# Kita hapus file lama dulu biar terganti yang baru
+#1. GENERATE DATA DUMMY (2020 - 2025)
 if os.path.exists(CSV_PATH):
     os.remove(CSV_PATH)
     print("🗑️ Menghapus data lama...")
@@ -45,7 +44,7 @@ df['label'] = ((df['rainfall'] > 10) | ((df['rainfall'] > 5) & (df['humidity'] >
 df.to_csv(CSV_PATH, index=False)
 print(f"✅ Data simulasi {DATA_SIZE} baris berhasil dibuat.")
 
-# --- 2. PREPROCESSING ---
+#2. PREPROCESSING
 print("⚙️ Sedang memproses data...")
 features = ['rainfall', 'temp', 'humidity', 'pressure']
 scaler = MinMaxScaler()
@@ -66,7 +65,7 @@ X_seq, y_seq = create_sequences(X_scaled, y, SEQ_LEN)
 # Split Training & Test (80% Latih, 20% Uji)
 X_train, X_test, y_train, y_test = train_test_split(X_seq, y_seq, test_size=0.2, shuffle=False)
 
-# --- 3. BUILD MODEL ---
+#3. BUILD MODEL
 print("🚀 Sedang Melatih Model AI (Ini mungkin agak lama)...")
 model = Sequential()
 model.add(Input(shape=(X_train.shape[1], X_train.shape[2])))
@@ -80,7 +79,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 # Epochs dinaikkan dikit biar makin pinter karena datanya banyak
 model.fit(X_train, y_train, epochs=5, batch_size=64, validation_data=(X_test, y_test))
 
-# --- 4. SAVE MODEL & SCALER ---
+#4. SAVE MODEL & SCALER
 model_path = os.path.join(SAVED_MODEL_DIR, 'lstm_flood.keras')
 scaler_path = os.path.join(SAVED_MODEL_DIR, 'scaler.pkl')
 

@@ -5,33 +5,27 @@ const db = require('../firestore');
 
 router.post('/now', async (req, res) => {
     try {
-        // 1. Ambil data historis terakhir (misal model butuh 5 data time-steps ke belakang)
-        // Sesuai Bab 3.3: Data diubah menjadi deret waktu
         const snapshot = await db.collection('weather_history')
             .orderBy('timestamp', 'desc')
-            .limit(5) // Asumsi LSTM butuh sequence length = 5
+            .limit(5) 
             .get();
 
         if (snapshot.empty || snapshot.docs.length < 5) {
             return res.status(400).json({ message: "Data historis belum cukup untuk prediksi LSTM" });
         }
 
-        // Format data agar sesuai input Flask/Python (urutan harus benar, misal ascending)
         const inputData = snapshot.docs.map(doc => {
             const d = doc.data();
-            return [d.rainfall, d.temperature, d.humidity, d.pressure]; // Fitur sesuai Bab 3.3
-        }).reverse(); // Balik jadi urutan lama -> baru
+            return [d.rainfall, d.temperature, d.humidity, d.pressure]; 
+        }).reverse(); 
 
-        // 2. Kirim ke Model Service (Python)
-        // Di env kamu: MODEL_SERVICE_URL=http://localhost:5000/predict
         const modelResponse = await axios.post(process.env.MODEL_SERVICE_URL, {
-        features: [inputData]  // LSTM expects shape: (batch=1, seq_len, features=4)
+        features: [inputData] 
             });
 
 
-        const prediction = modelResponse.data; // Harapannya { result: 0.85, status: "Awas" }
+        const prediction = modelResponse.data; 
 
-        // 3. Simpan hasil prediksi ke DB untuk riwayat
         await db.collection('predictions').add({
             timestamp: new Date(),
             input_features: inputData,

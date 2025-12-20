@@ -1,4 +1,3 @@
-// firestore.js - VERSI BYPASS (Agar server tidak crash)
 const db = {
   collection: (name) => ({
     add: async (data) => console.log(`[MOCK DB] Simpan ke ${name}:`, data),

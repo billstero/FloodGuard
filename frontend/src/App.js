@@ -37,44 +37,50 @@ function App() {
     try {
       if (!isSimulating) setWeather(prev => ({ ...prev, location: 'Mengambil Data...' }));
       
+      // 1. AMBIL DATA DULU (FETCH) - Tadi ini hilang/ketimpa
       const w = await fetchOpenWeather(lat, lon);
       
+      // 2. BARU PROSES DATANYA
       if (w && w.data) {
         let current = w.data.current; 
-        let hourlyData = w.data.hourly || [];
-        
-        // === FIX SINKRONISASI GRAFIK & KARTU ===
-        // Kita ambil data probabilitas dari jam pertama (hourly[0]) 
-        // agar angka di Kartu SAMA PERSIS dengan titik pertama di Grafik.
-        
-        let firstHourPop = 0;
+        let hourlyData = w.data.hourly || []; // Definisi variabel ada di sini
+
+        // === ULTIMATE FIX: SINKRONISASI MAX VALUE ===
+        let maxPop = 0;
         if (hourlyData.length > 0) {
-            // Cek properti 'pop' (standar API) atau 'rain_prob' (backend custom)
-            let rawPop = hourlyData[0].pop !== undefined ? hourlyData[0].pop : hourlyData[0].rain_prob;
-            
-            // OpenWeather kirim 0.0 s/d 1.0, kita ubah ke persen (0-100)
-            // Kalau data backend sudah 0-100, biarkan saja.
-            firstHourPop = (rawPop <= 1) ? rawPop * 100 : rawPop;
+            // Loop 3 data pertama
+            const checkLimit = Math.min(3, hourlyData.length);
+            for (let i = 0; i < checkLimit; i++) {
+                let rawPop = hourlyData[i].pop !== undefined ? hourlyData[i].pop : hourlyData[i].rain_prob;
+                
+                // Normalisasi
+                let val = (rawPop <= 1) ? rawPop * 100 : rawPop;
+                
+                // Ambil nilai terbesar
+                if (val > maxPop) maxPop = val;
+            }
         }
         
-        let realPop = Math.round(firstHourPop);
+        let realPop = Math.round(maxPop);
         // =======================================
 
         let realRain = current.rain || 0; 
         let realTemp = current.temp; 
         let realHum = current.humidity;
 
+        // Logika Simulasi
         if (isSimulating) {
             realRain = 45.5; realPop = 98; realTemp = 24.0; realHum = 92;
             hourlyData = hourlyData.map(h => ({ ...h, rain_prob: 90 + (Math.random() * 10), rain: { '1h': 20 + Math.random() * 10 } }));
         }
 
+        // Update State
         setWeather({ 
             temp: realTemp, 
             humidity: realHum, 
             wind: current.wind_speed, 
             rain: realRain, 
-            pop: realPop, // <-- Nilai ini sekarang sinkron dengan grafik
+            pop: realPop, 
             location: customName || w.data.location 
         });
 

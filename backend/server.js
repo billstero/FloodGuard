@@ -18,9 +18,6 @@ const BMKG_JAKARTA_URL = "https://api.bmkg.go.id/publik/prakiraan-cuaca?adm1=31"
 app.use(cors());
 app.use(express.json());
 
-// ==================================================================
-// 1. FUNGSI KONVERSI DESKRIPSI BMKG -> PERSEN (LOGIKA SAFETY)
-// ==================================================================
 function mapBMKGtoPOP(desc) {
   if (!desc) return 0;
   const d = desc.toLowerCase();
@@ -35,16 +32,13 @@ function mapBMKGtoPOP(desc) {
   return 10;
 }
 
-// ==================================================================
-// 2. FUNGSI CARI LOKASI TERDEKAT DARI DATA BMKG
-// ==================================================================
 async function fetchClosestBMKGData(userLat, userLon) {
     try {
         console.log("📡 [BMKG] Request ke API Provinsi Jakarta...");
         
         // 1. Ambil Data Satu Provinsi
         const response = await axios.get(BMKG_JAKARTA_URL);
-        const dataWilayah = response.data.data; // Ini array isinya banyak kecamatan
+        const dataWilayah = response.data.data; 
 
         if (!dataWilayah || dataWilayah.length === 0) {
             throw new Error("Data BMKG Kosong");
@@ -55,7 +49,6 @@ async function fetchClosestBMKGData(userLat, userLon) {
         let minDistance = Infinity;
 
         dataWilayah.forEach(area => {
-            // Pastikan area punya koordinat
             if (area.lat && area.lon) {
                 const dist = Math.sqrt(
                     Math.pow(parseFloat(area.lat) - parseFloat(userLat), 2) + 
@@ -71,8 +64,6 @@ async function fetchClosestBMKGData(userLat, userLon) {
 
         // 3. Ambil Data Cuaca dari Lokasi Terdekat
         if (closestArea && closestArea.cuaca) {
-            // Ambil array cuaca (biasanya per 3 jam atau per jam)
-            // Kita ambil index 0 (prediksi terdekat saat ini)
             const cuacaTerkini = closestArea.cuaca.flat()[0];
             
             const deskripsi = cuacaTerkini.weather_desc || "Cerah Berawan";
@@ -95,9 +86,6 @@ async function fetchClosestBMKGData(userLat, userLon) {
     }
 }
 
-// ==================================================================
-// ROUTE 1: AMBIL DATA CUACA (HYBRID ENGINE)
-// ==================================================================
 app.get('/api/weather/openweather', async (req, res) => {
   try {
     const lat = req.query.lat || "-6.2088";
@@ -116,7 +104,6 @@ app.get('/api/weather/openweather', async (req, res) => {
     // 4. Proses Penggabungan (Max Logic)
     const formattedData = {
       location: currentRes.data.name,
-      // Info ini akan muncul di frontend kalau mau ditampilkan
       source_note: `Data: OW + BMKG ${bmkgRes.lokasi_bmkg}`,
       
       current: {
@@ -129,8 +116,6 @@ app.get('/api/weather/openweather', async (req, res) => {
       
       hourly: forecastRes.data.list.slice(0, 8).map(item => {
         const owScore = Math.round((item.pop || 0) * 100);
-        
-        // 🔥 LOGIKA SAFETY FIRST (Max Value) 🔥
         const finalPop = Math.max(owScore, bmkgScore);
 
         return {
@@ -150,7 +135,6 @@ app.get('/api/weather/openweather', async (req, res) => {
   } catch (error) {
     console.error("❌ [WEATHER ERROR]", error.message);
     
-    // Fallback Total
     const mockHourly = Array.from({ length: 8 }, (_, i) => ({
       dt: Math.floor(Date.now() / 1000) + (i * 3600 * 3),
       temp: 30, humidity: 80, rain: { '1h': 0 }, rain_prob: 50
@@ -166,9 +150,7 @@ app.get('/api/weather/openweather', async (req, res) => {
   }
 });
 
-// ==================================================================
-// ROUTE 2: PREDIKSI AI (Bridge ke Python)
-// ==================================================================
+
 app.post('/api/predict/run', async (req, res) => {
   try {
     const rawFeatures = req.body.features && req.body.features[0];
